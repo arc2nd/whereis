@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="jumbotron text-center">
+    <h1>Where you at?</h1>
+
+Where are all the people?
+</div>
+
+
+<div style="margin-left:50px; margin-right:50px;">
+
+    {% for key, val in names.items() %}
+        {{ key }} is at: {{ val }}<br>
+    {% endfor %}
+
+</div>
+{% endblock %}
+
