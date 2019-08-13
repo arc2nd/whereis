@@ -88,7 +88,7 @@ class User(object):
             self.middle_name = myself['middle_name']
             self.last_name = myself['last_name']
             self.email_address = myself['email_address']
-            
+            self.password = myself['pwd_hash']
             
 
     # Read operations
