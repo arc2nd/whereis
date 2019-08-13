@@ -2,6 +2,9 @@
 
 from datetime import datetime
 import bcrypt
+import config
+import db
+
 
 class User(object):
     role_id = 0
@@ -19,11 +22,14 @@ class User(object):
         return '<User %r>' % self.username
 
     @staticmethod
+    def _get_db_conn():
+        return db.build_conn('users')
+
+    @staticmethod
     def GetAll():
         all_users = []
-        if os.path.exists('users.json'):
-            with open('users.json', 'r') as fp:
-                all_users = json.load(fp)
+        for doc in User._get_db_conn().find():
+            all_users.append(doc)
         return all_users
 
     # Properties
@@ -43,24 +49,47 @@ class User(object):
     # Create operations
     def Add(self):
         """ Add a user """
-        allUsers = User.GetAll()
-        for user in allUsers:
-            if user.email_address == self.email_address:
-                raise ErrorHandler.ErrorHandler(message="user with that email address already exists", status_code=400)
+        # allUsers = User.GetAll()
+        # for user in allUsers:
+        #     if user.email_address == self.email_address:
+        #         raise ErrorHandler.ErrorHandler(message="user with that email address already exists", status_code=400)
 
-        if(not self.first_name or not self.password or not self.username):
-            raise ErrorHandler.ErrorHandler(message="one or more required fields are missing", status_code=400)
+        # if(not self.first_name or not self.password or not self.username):
+        #     raise ErrorHandler.ErrorHandler(message="one or more required fields are missing", status_code=400)
 
         # encrypt the password
         self.password = User.EncryptPassword(self.password)
 
-        # Default to standard role, start with 0 points
-        self.role_id = app.config["STANDARD_ROLE_ID"]
 
-        db.session.add(self)
-        db.session.commit()
+        user_dict = {'username': self.username, 
+                     'pwd_hash': self.password, 
+                     'email_address': self.email_address, 
+                     'role_id': self.role_id, 
+                     'first_name': self.first_name, 
+                     'middle_name': self.middle_name, 
+                     'last_name': self.last_name}
+
+        coll_store = self._get_db_conn()
+        if not coll_store.find(user_dict).count():
+            rec_id = coll_store.insert_one(user_dict)
+            return rec_id.inserted_id
+        else:
+            print('already found: {0} in DB\nDon\'t want to make a duplicate'.format(user_dict))
 
         return True
+
+    def Load(self):
+        """ Load user data form db """
+        coll_store = self._get_db_conn()
+        if self.VerifyPassword(self.password):
+            myself = self._get_db_conn().find_one({'username': self.username})
+            self.role_id = myself['role_id']
+            self.first_name = myself['first_name']
+            self.middle_name = myself['middle_name']
+            self.last_name = myself['last_name']
+            self.email_address = myself['email_address']
+            
+            
 
     # Read operations
     @staticmethod
@@ -127,12 +156,15 @@ class User(object):
     def VerifyPassword(self, password_to_test=None):
         """ Verifies that an entered password is correct """
         #encrypt password and check against database
-        if(bcrypt.checkpw(password_to_test.encode('utf-8'), self.password.encode('utf-8'))):
+        if(bcrypt.checkpw(password_to_test.encode('utf-8'), self.GetHashedPassword().encode('utf-8'))):
             return True
         else:
             return False
 
     def GetHashedPassword(self):
         """ Get a hashed password from the db """
-        return User.query.filter_by(id=self.id).first().password
+        # return User.query.filter_by(id=self.id).first().password
+        my_hash = None
+        my_hash = self._get_db_conn().find_one({'username': self.username})['pwd_hash']
+        return my_hash
 
