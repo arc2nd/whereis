@@ -6,7 +6,13 @@ from functools import wraps
 
 from flask import Flask, render_template, Response, redirect, url_for, request, session, flash
 
+import config
+import User
+
 app = Flask(__name__)
+
+def log_path():
+    return
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index')
@@ -46,6 +52,44 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# user login
+@app.route('/login', methods=['GET', 'POST'])
+@app.route('/user/login', methods=['GET', 'POST'])
+def user_login():
+    log_path()
+    if(request.method == 'POST'):
+        POST_USERNAME = str(request.form['user'])
+        POST_PASSWORD = str(request.form['pwd'])
+
+        result = User.User.GetByUsername(POST_USERNAME)
+
+        if result and result.VerifyPassword(POST_PASSWORD):
+            session['logged_in'] = config.get_now() 
+            session['user_id'] = result.id
+            session['username'] = result.username
+            session['role_id'] = result.role_id
+            session['timeout'] = 10 
+            _log.log('logged in', LogType.INFO)
+            flash('Success: You are now logged in', category='success')
+        else:
+            _log.log('bad credentials', LogType.WARN)
+            flash('Warning: Username and/or password were incorrect', category='warning')
+
+        return index()
+    else:
+        #form = UserAddForm()
+        return render_template('user_login.html', title='Log in')
+
+# user logout
+@app.route('/user/logout', methods=['GET'])
+@login_required
+def user_logout():
+    log_path()
+    if session.get('logged_in'):
+        session.clear()
+        _log.log('user logged out', LogType.INFO)
+
+    return splash()
 
 @app.route('/splash', methods=['GET'])
 def splash():
