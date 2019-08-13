@@ -1,0 +1,19 @@
+version: '3.1'
+services:
+  whereis:
+    image: whereis:latest
+    container_name: whereis
+    restart: unless-stopped
+    # network_mode: 'host'
+    ports:
+      - 8580:80
+    volumes:
+      - /mnt/whereis:/data
+  mongo:
+    image: mongo
+    container_name: whereis_mongo
+    restart: unless-stopped
+    ports: 
+      - 27017:27017
+    volumes:
+      - /mnt/whereis/mongo:/data/db
