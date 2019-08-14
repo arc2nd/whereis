@@ -10,6 +10,14 @@ import config
 import User
 
 app = Flask(__name__)
+app.secret_key = config.get_value('secret_key')
+
+
+class Log(object):
+    def log(self, msg):
+        print(msg)
+
+_log = Log()
 
 def log_path():
     return
@@ -65,11 +73,11 @@ def user_login():
 
         if result and result.VerifyPassword(POST_PASSWORD):
             session['logged_in'] = config.get_now() 
-            session['user_id'] = result.id
+            # session['user_id'] = result.id
             session['username'] = result.username
             session['role_id'] = result.role_id
             session['timeout'] = 10 
-            _log.log('logged in', LogType.INFO)
+            _log.log('logged in')  # , LogType.INFO)
             flash('Success: You are now logged in', category='success')
         else:
             _log.log('bad credentials', LogType.WARN)
@@ -87,7 +95,7 @@ def user_logout():
     log_path()
     if session.get('logged_in'):
         session.clear()
-        _log.log('user logged out', LogType.INFO)
+        _log.log('user logged out')  # , LogType.INFO)
 
     return splash()
 
@@ -96,9 +104,14 @@ def splash():
     return render_template('splash.html')
 
 @login_required
-@app.route('/set', methods=['GET'])
+@app.route('/set', methods=['GET', 'POST'])
 def set():
-    return render_template('set_location.html')
+    if(request.method == 'POST'):
+        location = str(request.form['location'])
+        User.User.SetLocation(session['username'], location)
+        print('you have just set your location to: {} '.format(location))
+        return render_template('just_set.html', new_loc=location)
+    return render_template('set_locations.html')
 
 
 @app.route('/whereis', methods=['GET'])
@@ -114,6 +127,9 @@ def whereis(name=None):
             return render_template('people.html', names=loc_dict)
     else:
         return render_template('error.html')
+
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

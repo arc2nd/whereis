@@ -14,6 +14,7 @@ class User(object):
     first_name = 'John'
     middle_name = 'Q'
     last_name = 'Doe'
+    location = None
 
     def __init__(self):
         self.role_id = 0
@@ -60,13 +61,7 @@ class User(object):
         # encrypt the password
         self.password = User.EncryptPassword(self.password)
 
-        user_dict = {'username': self.username, 
-                     'password': self.password, 
-                     'email_address': self.email_address, 
-                     'role_id': self.role_id, 
-                     'first_name': self.first_name, 
-                     'middle_name': self.middle_name, 
-                     'last_name': self.last_name}
+        user_dict = self.__dict__
 
         coll_store = self._get_db_conn()
         if not coll_store.find(user_dict).count():
@@ -91,6 +86,7 @@ class User(object):
         user.last_name = temp['last_name']
         user.email_address = temp['email_address']
         user.password = temp['password']
+        user.location = temp['location']
         return user
 
     # Update operations
@@ -107,6 +103,14 @@ class User(object):
                 print('Old password does not match the one found in the database')
         else:
             print('Passwords do not match')
+
+    @staticmethod
+    def SetLocation(username, location):
+        conn = User._get_db_conn()
+        this_user = User.GetByUsername(username)
+        this_user.location = location
+        conn.update({'username': this_user.username}, this_user.__dict__)
+        return True
 
     # Delete operations
 

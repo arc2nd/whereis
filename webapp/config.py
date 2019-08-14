@@ -8,7 +8,8 @@ import calendar
 basedir = os.path.dirname(os.path.realpath(__file__))
 
 config_dict = {'db_host': '192.168.1.3',
-               'db_port': 27017}
+               'db_port': 27017, 
+               'secret_key': 'I am a secret'}
 
 
 def get_value(key):
