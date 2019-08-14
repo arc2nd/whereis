@@ -60,9 +60,8 @@ class User(object):
         # encrypt the password
         self.password = User.EncryptPassword(self.password)
 
-
         user_dict = {'username': self.username, 
-                     'pwd_hash': self.password, 
+                     'password': self.password, 
                      'email_address': self.email_address, 
                      'role_id': self.role_id, 
                      'first_name': self.first_name, 
@@ -78,66 +77,36 @@ class User(object):
 
         return True
 
-    def Load(self):
-        """ Load user data form db """
-        coll_store = self._get_db_conn()
-        if self.VerifyPassword(self.password):
-            myself = self._get_db_conn().find_one({'username': self.username})
-            self.role_id = myself['role_id']
-            self.first_name = myself['first_name']
-            self.middle_name = myself['middle_name']
-            self.last_name = myself['last_name']
-            self.email_address = myself['email_address']
-            self.password = myself['pwd_hash']
-            
 
     # Read operations
     @staticmethod
     def GetByUsername(username):
         """ Return a user by username """
         user = User()
-        if os.path.exists('users.json'):
-            with open('users.json', 'r') as fp:
-                all_users = json.load(fp)
-            if username in all_users:
-                temp = all_users[username]
-            user.username = temp.username
-            user.password = temp.password
-            user.email_address = temp.email_address
-            user.first_name = temp.first_name
-            user.middle_name = temp.middle_name
-            user.last_name = temp.last_name
+        user.username = username
+        temp = User._get_db_conn().find_one({'username': user.username})
+        user.role_id = temp['role_id']
+        user.first_name = temp['first_name']
+        user.middle_name = temp['middle_name']
+        user.last_name = temp['last_name']
+        user.email_address = temp['email_address']
+        user.password = temp['password']
         return user
 
     # Update operations
-    
-    def ResetPassword(self, new_password=None, new_password_verify=None):
-        """ Updates a user's password without old password verification """
-
-        if(not new_password or not new_password_verify):
-            raise ErrorHandler.ErrorHandler(message="password or password verification was empty", status_code=400)
-
-        if new_password == new_password_verify:
-            new_password = User.EncryptPassword(new_password)
-            self.password = new_password
-            db.session.commit()
-            return True
-        else:
-            raise ErrorHandler.ErrorHandler(message="passwords do not match", status_code=400)
-        
-
     def UpdatePassword(self, new_password=None, new_password_verify=None, old_password=None):
         """ Updates a user's password """
         if new_password == new_password_verify:
             if self.VerifyPassword(old_password):
                 new_password = User.EncryptPassword(new_password)
                 self.password = new_password
-                db.session.commit()
+                conn = self._get_db_conn()
+                conn.update({'username': self.username}, self.__dict__)
                 return True
             else:
-                raise ErrorHandler.ErrorHandler(message="old password does not match stored password", status_code=400)
+                print('Old password does not match the one found in the database')
         else:
-            raise ErrorHandler.ErrorHandler(message="passwords do not match", status_code=400)
+            print('Passwords do not match')
 
     # Delete operations
 
@@ -156,15 +125,21 @@ class User(object):
     def VerifyPassword(self, password_to_test=None):
         """ Verifies that an entered password is correct """
         #encrypt password and check against database
-        if(bcrypt.checkpw(password_to_test.encode('utf-8'), self.GetHashedPassword().encode('utf-8'))):
-            return True
+        my_hash = self.GetHashedPassword()
+        if my_hash:
+            if(bcrypt.checkpw(password_to_test.encode('utf-8'), my_hash.encode('utf-8'))):
+                return True
+            else:
+                return False
         else:
             return False
 
     def GetHashedPassword(self):
         """ Get a hashed password from the db """
-        # return User.query.filter_by(id=self.id).first().password
         my_hash = None
-        my_hash = self._get_db_conn().find_one({'username': self.username})['pwd_hash']
+        try:
+            my_hash = self._get_db_conn().find_one({'username': self.username})['password']
+        except:
+            print('Can\'t find that user in the database')
         return my_hash
 
