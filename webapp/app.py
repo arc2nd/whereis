@@ -117,16 +117,14 @@ def set():
 @app.route('/whereis', methods=['GET'])
 @app.route('/whereis/<name>', methods=['GET'])
 def whereis(name=None):
-    path = 'locations.json'
-    if os.path.exists(path):
-        with open(path, 'r') as fp:
-            loc_dict = json.load(fp)
-        if name:
-            return render_template('person.html', loc=loc_dict[name])
-        else:
-            return render_template('people.html', names=loc_dict)
+    all_users = User.User.GetAll()
+    filter_users = {}
+    for user in all_users:
+        filter_users[user['username']] = user['location']
+    if name:
+        return render_template('person.html', name=name, loc=filter_users[name])
     else:
-        return render_template('error.html')
+        return render_template('people.html', names=filter_users)
 
 
 
