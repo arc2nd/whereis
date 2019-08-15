@@ -7,6 +7,11 @@
 <p>You're already logged in!</p>
 
 {% else %}
+
+<div class="jumbotron text-center">
+<h1>Log In</h1>
+</div>
+
 <form action="{{ url_for('user_login')}}" method="post" name="login">
     <div class="form-group">
         <div class="col-sm-2"> <!-- This gives the label the same left margin as the input text box -->

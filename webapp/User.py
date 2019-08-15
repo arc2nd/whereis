@@ -50,7 +50,7 @@ class User(object):
         """ Add a user """
         allUsers = User.GetAll()
         for user in allUsers:
-            if user.email_address == self.email_address:
+            if user['email_address'] == self.email_address:
                 print('user with that email address already exists')
                 return
 

@@ -48,7 +48,7 @@ def login_required(f):
                 if now - session['logged_in'] > delta:
                     # _log.log('session timed out', LogType.INFO)
                     session.clear()
-                    return redirect(url_for('user_login'))
+                    # return redirect(url_for('user_login'))
                 else:
                     session['logged_in'] = now
             else:
@@ -91,7 +91,7 @@ def user_login():
         return index()
     else:
         #form = UserAddForm()
-        return render_template('user_login.html', title='Log in')
+        return render_template('user_login.html')  # , title='Log in')
 
 # user logout
 @app.route('/user/logout', methods=['GET'])
@@ -107,8 +107,8 @@ def user_logout():
 def splash():
     return render_template('splash.html')
 
-@login_required
 @app.route('/set', methods=['GET', 'POST'])
+@login_required
 def set():
     if(request.method == 'POST'):
         location = str(request.form['location'])
