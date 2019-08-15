@@ -22,10 +22,6 @@ _log = Log()
 def log_path():
     return
 
-@app.route('/', methods=['GET', 'POST'])
-@app.route('/index')
-def index():
-    return render_template('index.html')
 
 # Route decorators
 
@@ -41,7 +37,7 @@ def login_required(f):
         # _log.log('login check', LogType.INFO)
         # check to see if we're logged in
         if 'logged_in' not in session:
-            return splash()
+            return user_login()
         else:
             # get the current time and see if it's more than the timeout greater
             #   than the last time a logged_in timestamp was stored
@@ -59,6 +55,15 @@ def login_required(f):
                 session['timeout'] = 10 
         return f(*args, **kwargs)
     return decorated_function
+
+
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index')
+@login_required
+def index():
+    return whereis()
+    # return render_template('index.html')
+
 
 # user login
 @app.route('/login', methods=['GET', 'POST'])
@@ -96,8 +101,7 @@ def user_logout():
     if session.get('logged_in'):
         session.clear()
         _log.log('user logged out')  # , LogType.INFO)
-
-    return splash()
+    return user_login()
 
 @app.route('/splash', methods=['GET'])
 def splash():

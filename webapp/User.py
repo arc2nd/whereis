@@ -7,17 +7,15 @@ import db
 
 
 class User(object):
-    role_id = 0
-    username = 'John'
-    password = 'test'
-    email_address = 'fake@email.com'
-    first_name = 'John'
-    middle_name = 'Q'
-    last_name = 'Doe'
-    location = None
-
     def __init__(self):
         self.role_id = 0
+        self.username = ''
+        self.password = 'test'
+        self.email_address = ''
+        self.first_name = ''
+        self.middle_name = ''
+        self.last_name = ''
+        self.location = ''
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -50,13 +48,15 @@ class User(object):
     # Create operations
     def Add(self):
         """ Add a user """
-        # allUsers = User.GetAll()
-        # for user in allUsers:
-        #     if user.email_address == self.email_address:
-        #         raise ErrorHandler.ErrorHandler(message="user with that email address already exists", status_code=400)
+        allUsers = User.GetAll()
+        for user in allUsers:
+            if user.email_address == self.email_address:
+                print('user with that email address already exists')
+                return
 
-        # if(not self.first_name or not self.password or not self.username):
-        #     raise ErrorHandler.ErrorHandler(message="one or more required fields are missing", status_code=400)
+        if(not self.first_name or not self.password or not self.username):
+            print('one or more required fields are missing')
+            return
 
         # encrypt the password
         self.password = User.EncryptPassword(self.password)
