@@ -97,7 +97,7 @@ class User(object):
                 new_password = User.EncryptPassword(new_password)
                 self.password = new_password
                 conn = self._get_db_conn()
-                conn.update({'username': self.username}, self.__dict__)
+                conn.update({'username': self.username}, {'$set': self.__dict__})
                 return True
             else:
                 print('Old password does not match the one found in the database')
@@ -109,7 +109,7 @@ class User(object):
         conn = User._get_db_conn()
         this_user = User.GetByUsername(username)
         this_user.location = location
-        conn.update({'username': this_user.username}, this_user.__dict__)
+        conn.update({'username': this_user.username}, {'$set': this_user.__dict__})
         return True
 
     # Delete operations
