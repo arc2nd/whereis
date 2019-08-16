@@ -64,13 +64,12 @@ def index():
     return whereis()
     # return render_template('index.html')
 
-
 # user login
 @app.route('/login', methods=['GET', 'POST'])
 @app.route('/user/login', methods=['GET', 'POST'])
 def user_login():
     log_path()
-    if(request.method == 'POST'):
+    if request.method == 'POST':
         POST_USERNAME = str(request.form['user'])
         POST_PASSWORD = str(request.form['pwd'])
 
@@ -110,13 +109,29 @@ def splash():
 @app.route('/set', methods=['GET', 'POST'])
 @login_required
 def set():
-    if(request.method == 'POST'):
+    if request.method == 'POST':
         location = str(request.form['location'])
         User.User.SetLocation(session['username'], location)
         print('you have just set your location to: {} '.format(location))
         return render_template('just_set.html', new_loc=location)
     return render_template('set_locations.html')
 
+@app.route('/edit', methods=['GET', 'POST'])
+@login_required
+def edit_user():
+    this_user = User.User.GetByUsername(session['username'])
+    if request.method == 'POST':
+        print(request.form)
+        this_user.first_name = str(request.form['first_name'])
+        this_user.middle_name = str(request.form['middle_name'])
+        this_user.last_name = str(request.form['last_name'])
+        this_user.email_address = str(request.form['email_address'])
+        if this_user.VerifyPassword(str(request.form['old_password'])):
+            if str(request.form['new_password']) == str(request.form['verify_password']):
+                this_user.UpdatePassword(str(request.form['new_password']), str(request.form['verify_password']), str(request.form['old_password']))
+        return render_template('edited_user.html', user=this_user)
+    else:
+        return render_template('edit_user.html', user=this_user)
 
 @app.route('/whereis', methods=['GET'])
 @app.route('/whereis/<name>', methods=['GET'])

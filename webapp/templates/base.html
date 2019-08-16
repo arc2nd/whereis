@@ -24,8 +24,13 @@
 {% if not footer %}
     <center>
     <a href="{{ url_for('index') }}">Index</a> | 
-    <a href="{{ url_for('set') }}">Set</a> | 
-    <a href="{{ url_for('user_logout') }}">Logout</a>
+    {% if session['logged_in'] %}
+        <a href="{{ url_for('edit_user') }}">Edit</a> | 
+        <a href="{{ url_for('set') }}">Set</a> | 
+        <a href="{{ url_for('user_logout') }}">Logout</a>
+    {% else %}
+        <a href="{{ url_for('user_login') }}">Login</a>
+    {% endif %}
     </center>
 {% endif %}
 </body>

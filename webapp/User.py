@@ -104,6 +104,11 @@ class User(object):
         else:
             print('Passwords do not match')
 
+    def UpdateInfo(self):
+        conn = self._get_db_conn()
+        conn.update({'username': self.username}, {'$set': self.__dict__})
+        return True
+
     @staticmethod
     def SetLocation(username, location):
         conn = User._get_db_conn()
