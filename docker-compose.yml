@@ -9,11 +9,11 @@ services:
       - 8580:80
     volumes:
       - /mnt/whereis:/data
-  mongo:
-    image: mongo
-    container_name: whereis_mongo
-    restart: unless-stopped
-    ports: 
-      - 27017:27017
-    volumes:
-      - /mnt/whereis/mongo:/data/db
+#  mongo:
+#    image: mongo
+#    container_name: whereis_mongo
+#    restart: unless-stopped
+#    ports: 
+#      - 27017:27017
+#    volumes:
+#      - /mnt/whereis/mongo:/data/db

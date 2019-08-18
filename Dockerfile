@@ -5,7 +5,7 @@ FROM python:3.6-slim
 COPY requirements.txt /tmp/
 
 COPY . /srv/webapp
-WORKDIR /srv/webapp
+WORKDIR /srv/webapp/webapp
 
 # update and install some stuff
 RUN apt-get clean && apt-get -y update 
@@ -14,5 +14,6 @@ RUN pip install --upgrade pip
 RUN pip install -r /tmp/requirements.txt
 
 COPY nginx.conf /etc/nginx/nginx.conf
-RUN chmod +x ./start.sh
-CMD ["./start.sh"]
+RUN chmod +x ../start.sh
+CMD ["../start.sh"]
+# CMD ["python webapp/app.py"]
